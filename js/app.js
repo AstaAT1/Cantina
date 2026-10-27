@@ -12,17 +12,16 @@ const cards = document.querySelector('#cards')
 const entree = document.querySelectorAll('.entree')
 const dessert = document.querySelectorAll('.dessert')
 const plat = document.querySelectorAll('.plat')
-
+const totals = document.querySelectorAll('#total')
+const status = document.querySelectorAll('.status')
+const deleteModal = document.querySelector('#deleteModal')
+const cancelDelete = document.querySelector('#cancelDelete')
+const confirmDelete = document.querySelector('#confirmDelete')
 
 const foods = []
-const planning = {
-    lundi : {entree : '' , platPrincipale: '' , dessert: ''},
-    mardi : {entree : '' , platPrincipale: '' , dessert: ''},
-    mercredi : {entree : '' , platPrincipale: '' , dessert: ''},
-    jeudi : {entree : '' , platPrincipale: '' , dessert: ''},
-    vendredi : {entree : '' , platPrincipale: '' , dessert: ''},
-}
+
 let editId = ''
+let deleteId = ''
 console.log(entree.length)
 console.log(plat.length)
 console.log(dessert.length)
@@ -86,19 +85,10 @@ form.addEventListener('submit', function (e) {
     console.log(foods)
 
     afficheRecettes()
-    entree.forEach(addEventListener('change' , function (e) {
-        console.log(e.value
-        );
-        
-    }))
-plat.forEach(function (e) {
-    affichePlanning(e, "Plat principal")
-})
-dessert.forEach(function (e) {
-    affichePlanning(e, "Dessert")
-})
+    selectPlanning()
+
     modalForm.reset()
-    editId = ''   
+    editId = ''
 })
 
 function afficheRecettes() {
@@ -153,14 +143,10 @@ function afficheRecettes() {
         categoryElement.textContent = recette.category
 
         deleteBtn.addEventListener('click', function () {
-            const index = foods.findIndex(function (f) {
-                return f.id === recette.id
-            })
-            if (index !== -1) {
-                foods.splice(index, 1)
-                afficheRecettes()
+            deleteId = recette.id
 
-            }
+            deleteModal.classList.remove('hidden')
+            deleteModal.classList.add('flex')
         })
         editBtn.addEventListener('click', function () {
             form.style.display = 'flex'
@@ -173,11 +159,34 @@ function afficheRecettes() {
         })
     })
 
+
 }
+cancelDelete.addEventListener('click', function() {
+    deleteModal.classList.add('hidden')
+    deleteModal.classList.remove('flex')
+    deleteId = ''
+})
+confirmDelete.addEventListener('click', function() {
+    const index = foods.findIndex(function(food) {
+        return food.id === deleteId
+    })
+    if (index !== -1) {
+        foods.splice(index, 1)
+        afficheRecettes()
+        selectPlanning()
+    }
+    deleteModal.classList.add('hidden')
+    deleteModal.classList.remove('flex')
+
+    deleteId = ''
+})
+
+
 function affichePlanning(jour, categori) {
     const recetteFilter = foods.filter(function (food) {
         return food.category === categori
     })
+    const selectValeur = jour.value
     jour.innerHTML = '<option value="" disabled selected hidden>Choisir une recette</option>'
     recetteFilter.forEach(function (recette) {
         const option = document.createElement('option')
@@ -185,6 +194,74 @@ function affichePlanning(jour, categori) {
         option.value = recette.id
         jour.appendChild(option)
     })
+    jour.value = selectValeur
 
 
 }
+
+function selectPlanning() {
+    entree.forEach(function (e) {
+        affichePlanning(e, "Entree")
+    })
+
+    plat.forEach(function (e) {
+        affichePlanning(e, "Plat principal")
+    })
+
+    dessert.forEach(function (e) {
+        affichePlanning(e, "Dessert")
+    })
+
+}
+function calculeTotal(i) {
+    let total = 0
+
+    const recetteEntree = foods.find(function (food) {
+        return food.id === entree[i].value
+    })
+    const recettePlat = foods.find(function (food) {
+        return food.id === plat[i].value
+    })
+    const recetteDessert = foods.find(function (food) {
+        return food.id === dessert[i].value
+    })
+    if (recetteEntree !== undefined) {
+        total += recetteEntree.price
+    }
+
+    if (recettePlat !== undefined) {
+        total += recettePlat.price
+    }
+
+    if (recetteDessert !== undefined) {
+        total += recetteDessert.price
+    }
+    totals[i].textContent = 'Total: ' + total + ' DH / 50 DH'
+    if (total > 50) {
+        totals[i].classList.add('text-red-600')
+    } else {
+        totals[i].classList.remove('text-red-600')
+    }
+    if (
+        entree[i].value !== '' && plat[i].value !== '' && dessert[i].value !== ''
+    ) {
+        status[i].textContent = 'Complet'
+    } else {
+        status[i].textContent = 'Incomplet'
+    }
+}
+entree.forEach(function (select, i) {
+    select.addEventListener('change', function () {
+        calculeTotal(i)
+    })
+})
+plat.forEach(function (select, i) {
+    select.addEventListener('change', function () {
+        calculeTotal(i)
+    })
+})
+dessert.forEach(function (select, i) {
+    select.addEventListener('change', function () {
+        calculeTotal(i)
+    })
+})
