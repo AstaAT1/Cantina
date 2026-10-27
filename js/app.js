@@ -9,21 +9,35 @@ const categorie = document.querySelector('#categorie')
 const qualite = document.querySelector('#qualite')
 const image = document.querySelector('#image')
 const cards = document.querySelector('#cards')
-const lundiEntree = document.querySelector('#lundi-entree')
+const entree = document.querySelectorAll('.entree')
+const dessert = document.querySelectorAll('.dessert')
+const plat = document.querySelectorAll('.plat')
+
 
 const foods = []
-let editId = null
+const planning = {
+    lundi : {entree : '' , platPrincipale: '' , dessert: ''},
+    mardi : {entree : '' , platPrincipale: '' , dessert: ''},
+    mercredi : {entree : '' , platPrincipale: '' , dessert: ''},
+    jeudi : {entree : '' , platPrincipale: '' , dessert: ''},
+    vendredi : {entree : '' , platPrincipale: '' , dessert: ''},
+}
+let editId = ''
+console.log(entree.length)
+console.log(plat.length)
+console.log(dessert.length)
+
 
 btn.addEventListener('click', function () {
     form.style.display = 'flex'
     image.required = true
-    editId = null
+    editId = ''
     modalForm.reset()
 })
 cancel.addEventListener('click', function () {
     form.style.display = 'none'
     modalForm.reset()
-    editId = null
+    editId = ''
 
 })
 form.addEventListener('submit', function (e) {
@@ -38,11 +52,11 @@ form.addEventListener('submit', function (e) {
     }
 
     const file = image.files[0]
-    let objectURL = null
+    let objectURL = ''
     if (file !== undefined) {
         objectURL = URL.createObjectURL(file)
     }
-    
+
     recette.name = name.value
     recette.price = Number(price.value)
     recette.category = categorie.value
@@ -50,11 +64,11 @@ form.addEventListener('submit', function (e) {
     recette.image = objectURL
     recette.id = crypto.randomUUID()
 
-    if (editId === null) {
+    if (editId === '') {
         foods.push(recette)
     }
-    else{
-       const testfind = foods.find(function (f) {
+    else {
+        const testfind = foods.find(function (f) {
             return f.id === editId
         })
         if (testfind !== undefined) {
@@ -62,19 +76,29 @@ form.addEventListener('submit', function (e) {
             testfind.price = Number(price.value)
             testfind.category = categorie.value
             testfind.qualite = qualite.value
-            if (objectURL !== null) {
-            testfind.image = objectURL
+            if (objectURL !== '') {
+                testfind.image = objectURL
             }
         }
         console.log(foods);
-        
+
     }
     console.log(foods)
 
     afficheRecettes()
-    affichePlanning()
+    entree.forEach(addEventListener('change' , function (e) {
+        console.log(e.value
+        );
+        
+    }))
+plat.forEach(function (e) {
+    affichePlanning(e, "Plat principal")
+})
+dessert.forEach(function (e) {
+    affichePlanning(e, "Dessert")
+})
     modalForm.reset()
-    editId = null
+    editId = ''   
 })
 
 function afficheRecettes() {
@@ -135,7 +159,7 @@ function afficheRecettes() {
             if (index !== -1) {
                 foods.splice(index, 1)
                 afficheRecettes()
-             
+
             }
         })
         editBtn.addEventListener('click', function () {
@@ -150,16 +174,17 @@ function afficheRecettes() {
     })
 
 }
-function affichePlanning() {
-    const entree = foods.filter(function(food) {
-    return food.category === "Entree"
+function affichePlanning(jour, categori) {
+    const recetteFilter = foods.filter(function (food) {
+        return food.category === categori
     })
-    console.log(entree)
-    entree.forEach(function(recette) {
+    jour.innerHTML = '<option value="" disabled selected hidden>Choisir une recette</option>'
+    recetteFilter.forEach(function (recette) {
         const option = document.createElement('option')
         option.textContent = recette.name
         option.value = recette.id
-        lundiEntree.appendChild(option)
+        jour.appendChild(option)
     })
-    
+
+
 }
